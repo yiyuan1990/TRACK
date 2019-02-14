@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'org.greenrobot.greendao'
 android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.zkkc.track"
-        minSdkVersion 15
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -16,6 +16,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    greendao {
+        schemaVersion 1
+        daoPackage 'com.zgl.greentest.gen'
+        targetGenDir 'src/main/java'
+    }
 }
 
 dependencies {
@@ -25,4 +30,29 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    //v7
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+    //butterknife
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    //permissions
+    implementation 'com.github.tbruyelle:rxpermissions:0.10.2'
+    //greendao
+    implementation 'org.greenrobot:greendao:3.2.2'
+    //ThreadPool
+    implementation files('libs/ThreadPoolHelp-2.0.jar')
+    implementation 'org.greenrobot:eventbus:3.1.1'
+    //utilcode
+    implementation 'com.blankj:utilcode:1.23.4'
+    //widget
+    implementation 'com.github.kongqw:AndroidRocker:1.0.1'
+    implementation 'com.github.chrisbanes:PhotoView:2.1.4' //取2.1.4版本，后续版本是依赖了androidx库和v7库冲突
+    //dialog
+    implementation 'com.github.cazaea:sweet-alert-dialog:1.0.0'
+    //ui
+    implementation 'com.github.bumptech.glide:glide:4.8.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
+    implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-alpha-14'
+    implementation 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-alpha-14'
 }

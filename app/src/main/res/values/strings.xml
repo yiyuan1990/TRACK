@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Track Robot</string>
+    <string name="app_name">Track</string>
     <string name="name_1">配置</string>
     <string name="name_2">自动对焦</string>
     <string name="name_3">关闭</string>

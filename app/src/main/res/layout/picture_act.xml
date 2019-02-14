@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_color"
+    android:orientation="vertical"
+    android:paddingRight="@dimen/dp_35"
+    android:paddingBottom="@dimen/dp_10">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_55"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/llBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp_15"
+            android:background="@drawable/ll_clicked"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/dp_15"
+            android:paddingRight="@dimen/dp_15">
+
+            <Button
+                android:layout_width="@dimen/dp_30"
+                android:layout_height="@dimen/dp_28"
+                android:background="@mipmap/ic_back" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="返回"
+                android:textColor="@color/yellow"
+                android:textSize="@dimen/sp_16" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="本机存储："
+
+            android:textColor="@color/yellow"
+            android:textSize="@dimen/sp_16" />
+
+        <TextView
+            android:id="@+id/tvMemory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/dp_30"
+            android:text="3.8G/16G"
+            android:textColor="@color/yellow"
+            android:textSize="@dimen/sp_16" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/show_photo"
+            android:padding="@dimen/dp_3">
+
+            <com.github.chrisbanes.photoview.PhotoView
+                android:id="@+id/pvShow"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.4"
+            android:background="@drawable/show_photo"
+            android:orientation="vertical"
+            android:padding="@dimen/dp_5">
+
+            <TextView
+                android:id="@+id/tvNoPic"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="暂无图片"
+                android:textColor="@color/yellow"
+                android:textSize="@dimen/sp_25"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <android.support.v7.widget.SearchView
+                android:layout_width="match_parent"
+                android:background="@drawable/search_top_bg"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginRight="@dimen/dp_5"
+                android:layout_height="@dimen/dp_30">
+
+            </android.support.v7.widget.SearchView>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvPicture"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+            </android.support.v7.widget.RecyclerView>
+
+            <LinearLayout
+                android:id="@+id/llMake"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="取消" />
+
+                <Button
+                    android:id="@+id/btnDel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="删除" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+    </LinearLayout>
+</LinearLayout>
