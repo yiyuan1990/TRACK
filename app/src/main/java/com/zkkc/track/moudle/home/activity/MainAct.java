@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -170,6 +171,22 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     private int powNum;//当前电量
     private int gear = 5;//默认摆臂档数为5档 最高9档
     private ExecutorService threadPool;
+
+    /**
+     * 播放器
+     */
+    private SurfaceView sSurfaceView = null;
+    private long playerHandle = 0;
+    private static final int PLAYER_EVENT_MSG = 1;
+    private static final int PLAYER_USER_DATA_MSG = 2;
+    private static final int PLAYER_SEI_DATA_MSG = 3;
+
+
+
+    static {
+        System.loadLibrary("SmartPlayer");
+    }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void batteryEvent(BatteryStateBean stateBean) {
