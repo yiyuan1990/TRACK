@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Track Robot</string>
+    <string name="name_1">配置</string>
+    <string name="name_2">自动对焦</string>
+    <string name="name_3">关闭</string>
+    <string name="name_4">平稳</string>
+    <string name="name_5">0°</string>
+    <string name="name_6">强</string>
+    <string name="name_7">连接断开</string>
+    <string name="name_8">终端电量</string>
+    <string name="name_9">主机电量</string>
+    <string name="name_10">关闭</string>
+    <string name="name_11">照片</string>
+</resources>
