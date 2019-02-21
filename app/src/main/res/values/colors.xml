@@ -8,6 +8,7 @@
     <color name="gray_5">#09ffffff</color>
     <color name="gray_10">#05ffffff</color>
     <color name="gray_20">#99FFEF5B</color>
+    <color name="gray_8">#8AFAED70</color>
     <color name="bg_color">#2c2840</color>
     <color name="bg_dialog">#312E42</color>
     <color name="yellow">#FFCC33</color>
@@ -18,4 +19,5 @@
     <color name="light_white">#BEF5F3F3</color>
     <color name="violet">#673AB7</color>
     <color name="transparent">#00FFFFFF</color>
+    <color name="orange">#FF6902</color>
 </resources>

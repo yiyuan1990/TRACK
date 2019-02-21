@@ -10,6 +10,8 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+
     buildTypes {
         release {
             minifyEnabled false
@@ -21,11 +23,15 @@ android {
         daoPackage 'com.zgl.greentest.gen'
         targetGenDir 'src/main/java'
     }
+    repositories {
+        flatDir { dirs 'libs' }
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -55,6 +61,19 @@ dependencies {
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
     implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-alpha-14'
     implementation 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-alpha-14'
-    //smartavengine
-    implementation files('src/main/jniLibs/smartavengine.jar')
+    implementation 'com.uniquestudio:checkbox:1.0.10'
+    //GSYVideoPlayer
+    implementation 'com.shuyu:gsyVideoPlayer-java:6.0.3'
+    //是否需要ExoPlayer模式
+//    implementation 'com.shuyu:GSYVideoPlayer-exo2:6.0.3'
+    //更多ijk的编码支持
+    implementation 'com.shuyu:gsyVideoPlayer-ex_so:6.0.3'
+    //vlc
+//    compile 'de.mrmaffen:libvlc-android:2.1.12@aar'
+    //okSocket
+    //Basic Socket client functionality
+    api 'com.tonystark.android:socket:4.1.0'
+    //If you want to use server functionality, you need to compile the following libraries
+    api 'com.tonystark.android:socket-server:4.1.0'
+
 }

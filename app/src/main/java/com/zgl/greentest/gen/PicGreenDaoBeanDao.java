@@ -41,7 +41,7 @@ public class PicGreenDaoBeanDao extends AbstractDao<PicGreenDaoBean, Long> {
     public static void createTable(Database db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"PIC_GREEN_DAO_BEAN\" (" + //
-                "\"_id\" INTEGER PRIMARY KEY ," + // 0: id
+                "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "\"NAME\" TEXT);"); // 1: name
     }
 

@@ -386,7 +386,7 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="2dp"
+        android:layout_height="1dp"
         android:background="@color/yellow" />
 
     <RelativeLayout
@@ -399,11 +399,20 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <!--<SurfaceView-->
+                <!--android:id="@+id/surfaceView"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:visibility="visible" />-->
+
+
+            <com.zkkc.track.widget.EmptyControlVideo
+                android:id="@+id/detail_player"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="visible" />
         </RelativeLayout>
-        <!--<SurfaceView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:visibility="invisible" />-->
+
         <!--<com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer-->
         <!--android:id="@+id/detail_player"-->
         <!--android:layout_width="match_parent"-->

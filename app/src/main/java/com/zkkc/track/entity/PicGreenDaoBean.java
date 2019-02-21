@@ -1,8 +1,10 @@
 package com.zkkc.track.entity;
 
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
+
 
 /**
  * Created by ShiJunRan on 2019/2/12
@@ -10,7 +12,7 @@ import org.greenrobot.greendao.annotation.Generated;
  */
 @Entity
 public class PicGreenDaoBean {
-    @Id
+    @Id(autoincrement = true)
     private Long id;
     private String name;
     @Generated(hash = 1383977604)

@@ -66,7 +66,9 @@
     <dimen name="dp_200">200dp</dimen>
     <dimen name="sp_8">8sp</dimen>
     <dimen name="sp_10">10sp</dimen>
+    <dimen name="sp_11">11sp</dimen>
     <dimen name="sp_12">12sp</dimen>
+    <dimen name="sp_13">13sp</dimen>
     <dimen name="sp_14">14sp</dimen>
     <dimen name="sp_16">16sp</dimen>
     <dimen name="sp_18">18sp</dimen>
@@ -75,16 +77,16 @@
     <dimen name="sp_25">25sp</dimen>
 
     //主页面图标
-    <dimen name="image_width">25dp</dimen>
-    <dimen name="image_height">25dp</dimen>
+    <dimen name="image_width">22dp</dimen>
+    <dimen name="image_height">22dp</dimen>
 
     <dimen name="padding_left">10dp</dimen>
     <dimen name="padding_right">10dp</dimen>
-    <dimen name="padding_top">8dp</dimen>
-    <dimen name="padding_bottom">2dp</dimen>
+    <dimen name="padding_top">5dp</dimen>
+    <dimen name="padding_bottom">1dp</dimen>
 
-    <dimen name="text_padding_top">3dp</dimen>
-    <dimen name="text_size">12sp</dimen>
+    <dimen name="text_padding_top">1dp</dimen>
+    <dimen name="text_size">11sp</dimen>
 
 
 </resources>

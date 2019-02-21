@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,18 +17,37 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.blankj.utilcode.util.ConvertUtils;
+import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.kongqw.rockerlibrary.view.RockerView;
 import com.luoxudong.app.threadpool.ThreadPoolHelp;
+import com.shuyu.gsyvideoplayer.GSYVideoManager;
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
+import com.shuyu.gsyvideoplayer.model.VideoOptionModel;
 import com.tbruyelle.rxpermissions2.RxPermissions;
+import com.xuhao.didi.core.iocore.interfaces.ISendable;
+import com.xuhao.didi.core.pojo.OriginalData;
+import com.xuhao.didi.core.protocol.IReaderProtocol;
+import com.xuhao.didi.socket.client.sdk.OkSocket;
+import com.xuhao.didi.socket.client.sdk.client.ConnectionInfo;
+import com.xuhao.didi.socket.client.sdk.client.OkSocketOptions;
+import com.xuhao.didi.socket.client.sdk.client.action.SocketActionAdapter;
+import com.xuhao.didi.socket.client.sdk.client.connection.IConnectionManager;
+import com.xuhao.didi.socket.client.sdk.client.connection.NoneReconnect;
+import com.zkkc.track.Constant;
 import com.zkkc.track.R;
 import com.zkkc.track.base.BaseActivity;
 import com.zkkc.track.entity.BatteryStateBean;
+import com.zkkc.track.entity.HostDaoBean;
+import com.zkkc.track.moudle.config.activity.ConfigAct;
 import com.zkkc.track.moudle.home.contract.MainContract;
+import com.zkkc.track.moudle.home.entity.TestSendData;
 import com.zkkc.track.moudle.home.presenter.MainPresenter;
 import com.zkkc.track.moudle.pic.activity.PictureAct;
 import com.zkkc.track.receiver.BatteryChangedReceiver;
 import com.zkkc.track.utils.SPUtil;
+import com.zkkc.track.widget.EmptyControlVideo;
 import com.zkkc.track.widget.HorTextClock;
 import com.zkkc.track.widget.seekbar.VerticalSeekBar;
 
@@ -37,17 +55,18 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.reactivex.functions.Consumer;
+import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 public class MainAct extends BaseActivity<MainContract.View, MainContract.Presenter> implements MainContract.View {
     //顶部布局按钮
@@ -141,7 +160,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     ImageButton ibXJD3;
     @BindView(R.id.tvSuDu3)
     TextView tvSuDu3;
-    //拍照
+    //抓拍
     @BindView(R.id.ibPhotograph)
     ImageButton ibPhotograph;
     //LED亮度seekBar
@@ -157,35 +176,24 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     RockerView rockerViewLeft;
     @BindView(R.id.rockerViewRight)
     RockerView rockerViewRight;
-
+    //播放器
     @BindView(R.id.rlBotMatch)
     RelativeLayout rlBotMatch;
-
+    @BindView(R.id.detail_player)
+    EmptyControlVideo detailPlayer;
+    //    @BindView(R.id.surfaceView)
+//    SurfaceView mSurfaceView;
     //电池广播接收数据
     private static final String BATTERY_STATUS_CHARGING = "BATTERY_STATUS_CHARGING";
     private static final String BATTERY_STATUS_FULL = "BATTERY_STATUS_FULL";
     private static final String BATTERY_STATUS_NOT_CHARGING = "BATTERY_STATUS_NOT_CHARGING";
+
 
     private BatteryChangedReceiver batteryChangedReceiver;
     private String batteryType;//充电状态
     private int powNum;//当前电量
     private int gear = 5;//默认摆臂档数为5档 最高9档
     private ExecutorService threadPool;
-
-    /**
-     * 播放器
-     */
-    private SurfaceView sSurfaceView = null;
-    private long playerHandle = 0;
-    private static final int PLAYER_EVENT_MSG = 1;
-    private static final int PLAYER_USER_DATA_MSG = 2;
-    private static final int PLAYER_SEI_DATA_MSG = 3;
-
-
-
-    static {
-        System.loadLibrary("SmartPlayer");
-    }
 
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
@@ -241,6 +249,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         return this;
     }
 
+
     @Override
     public void init() {
         //动态权限
@@ -263,6 +272,75 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         threadPool = ThreadPoolHelp.Builder
                 .cached()
                 .builder();
+        //播放器配置初始化
+        initRTSPVideo();
+
+    }
+
+    private void initRTSPVideo() {
+        VideoOptionModel videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_transport", "tcp");
+        List<VideoOptionModel> list = new ArrayList<>();
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_flags", "prefer_tcp");
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "allowed_media_types", "video"); //根据媒体类型来配置
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "timeout", 5000);
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "buffer_size", 1316);
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "infbuf", 1);  // 无限读
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzemaxduration", 100);
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 200);
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "flush_packets", 1);
+        list.add(videoOptionModel);
+        //  关闭播放器缓冲，这个必须关闭，否则会出现播放一段时间后，一直卡主，控制台打印 FFP_MSG_BUFFERING_START
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
+        list.add(videoOptionModel);
+
+
+        // 视频帧处理不过来的时候丢弃一些帧达到同步的效果
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max-fps", 0);
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "fps", 30);
+        list.add(videoOptionModel);
+        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
+        list.add(videoOptionModel);
+
+        GSYVideoManager.instance().setOptionModelList(list);
+        detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
+        detailPlayer.setVideoAllCallBack(new GSYSampleCallBack() {
+            @Override
+            public void onPrepared(String url, Object... objects) {
+                super.onPrepared(url, objects);
+                LogUtils.eTag("SJR", "onPrepared-->" + url);
+            }
+
+            @Override
+            public void onAutoComplete(String url, Object... objects) {
+                super.onAutoComplete(url, objects);
+                LogUtils.eTag("SJR", "onAutoComplete");
+                //停止推流后回调（意外数据丢失）
+                if (socketState) {
+                    detailPlayer.startPlayLogic();//视频播放
+                }
+
+            }
+
+            @Override
+            public void onPlayError(String url, Object... objects) {
+                super.onPlayError(url, objects);
+                LogUtils.eTag("SJR", "onPlayError");
+                //服务端未开启
+
+            }
+        });
+
     }
 
 
@@ -314,7 +392,9 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
 
             //顶部tab
             case R.id.llDeploy://配置
-
+//                msg8[0] = 0x01;
+//                sendAndGetSocketData(msg8);
+                startActivity(new Intent(MainAct.this, ConfigAct.class));
                 break;
             case R.id.llAutoF://自动对焦
                 break;
@@ -323,6 +403,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 break;
             case R.id.llPhoto://照片
                 startActivity(new Intent(MainAct.this, PictureAct.class));
+
                 break;
             case R.id.llConnect://连接
                 showConnectDialog();
@@ -331,12 +412,18 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 showCloseDialog();
                 break;
             case R.id.ibPhotograph://抓拍
+                boolean inPlayingState = detailPlayer.isInPlayingState();
+                if (inPlayingState) {
+                    getPresenter().photoGraph(this, detailPlayer, threadPool);
+                } else {
+                    ToastUtils.showShort("请连接主机摄像头");
+                }
+
 
                 break;
 
         }
     }
-
 
     /**
      * 连接Dialog
@@ -345,75 +432,153 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     private Socket socket;
     private OutputStream outputStream;
     private InputStream inputStream;
-    private String mIp;
-    private int mPort;
     private boolean socketState = false;
+    private byte[] msg8 = new byte[8];
+    private byte[] msg9 = new byte[9];
+    TextView tvNameDia;
+    TextView tvhIpDia;
+    TextView tvhPortDia;
+    TextView tvuNameDia;
+    TextView tvuPw;
+    Button btnConnect;
+    boolean isSetHost = false;//是否设置了主机IP
+
+    HostDaoBean hostDaobean;
 
     private void showConnectDialog() {
-        View dialogView = View.inflate(this, R.layout.connect_dialog, null);
+        View diaView = View.inflate(this, R.layout.connect_dialog, null);
         connectDialog = new Dialog(this);
-        connectDialog.setContentView(dialogView);
+        connectDialog.setContentView(diaView);
+        tvNameDia = diaView.findViewById(R.id.tvNameDia);
+        tvhIpDia = diaView.findViewById(R.id.tvhIpDia);
+        tvhPortDia = diaView.findViewById(R.id.tvhPortDia);
+        tvuNameDia = diaView.findViewById(R.id.tvuNameDia);
+        tvuPw = diaView.findViewById(R.id.tvuPw);
+        btnConnect = diaView.findViewById(R.id.btnConnect);
         connectDialog.show();
-        final EditText etIp = dialogView.findViewById(R.id.etIp);
-        final EditText etPort = dialogView.findViewById(R.id.etPort);
-        Button btnConnect = dialogView.findViewById(R.id.btnConnect);
-        String strIp = SPUtil.getString(this, "IP", "");
-        int inPort = SPUtil.getInt(this, "PORT", 0);
-        etIp.setText(strIp);
-        if (inPort == 0) {
-            etPort.setText("");
-        } else {
-            etPort.setText(inPort + "");
-        }
-
+        getPresenter().switchoverHost(threadPool);
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO 点击连接的逻辑
-                mIp = etIp.getText().toString().trim();
-                mPort = Integer.parseInt(etPort.getText().toString().trim());
-                boolean ip = SPUtil.putString(MainAct.this, "IP", mIp);
-                boolean port = SPUtil.putInt(MainAct.this, "PORT", mPort);
-                if (ip && port) {
-                    socketRun();
-                }
-
-
-            }
-        });
-    }
-
-    private void socketRun() {
-        threadPool.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    socket = new Socket();
-                    socket.connect(new InetSocketAddress(mIp, mPort), 3000);//连接超时5000毫秒
-                    ToastUtils.showShort("连接成功！");
-                    if (socket != null) {
-                        socketState = true;
-                        outputStream = socket.getOutputStream();
-                        connectDialog.dismiss();
+                if (isSetHost) {
+                    if (socketState) {
+                        manager.disconnect();//断开无效啊
                     } else {
-                        socketState = false;
+                        String mIp = hostDaobean.getHIp();
+                        String strPort = hostDaobean.getHPort();
+                        if (!mIp.equals("") && !strPort.equals("")) {
+                            int mPort = Integer.parseInt(strPort);
+                            socketRun(mIp, mPort);
+                        }
                     }
 
-
-                } catch (SocketTimeoutException aa) {
-                    ToastUtils.showShort("连接超时！");
-                    Log.d("socketRun", aa.getMessage());
-                    aa.printStackTrace();
-                } catch (IOException e) {
-                    ToastUtils.showShort("连接失败--" + e.getMessage());
-                    Log.d("socketRun", e.getMessage());
-                    e.printStackTrace();
+                } else {
+                    connectDialog.dismiss();
+                    startActivity(new Intent(MainAct.this, ConfigAct.class));
                 }
 
             }
         });
 
     }
+
+    ConnectionInfo info;
+    IConnectionManager manager;
+
+    private void socketRun(String mIp, int mPort) {
+        //连接参数设置(IP,端口号),这也是一个连接的唯一标识,不同连接,该参数中的两个值至少有其一不一样
+        info = new ConnectionInfo(mIp, mPort);
+        //调用OkSocket,开启这次连接的通道,调用通道的连接方法进行连接.
+        manager = OkSocket.open(info);
+        //获得当前连接通道的参配对象
+        OkSocketOptions mOptions = manager.getOption();
+        OkSocketOptions.Builder optionsBuilder = new OkSocketOptions.Builder(mOptions);
+        optionsBuilder.setReconnectionManager(new NoneReconnect());
+        optionsBuilder.setConnectTimeoutSecond(2);
+        optionsBuilder.setReaderProtocol(new IReaderProtocol() {
+            @Override
+            public int getHeaderLength() {
+
+                return 1;
+            }
+
+            @Override
+            public int getBodyLength(byte[] header, ByteOrder byteOrder) {
+                return 4;
+            }
+        });
+        manager.option(optionsBuilder.build());
+        manager.connect();
+        manager.registerReceiver(new SocketActionAdapter() {
+            @Override
+            public void onSocketIOThreadShutdown(String action, Exception e) {//主动中断连接
+                super.onSocketIOThreadShutdown(action, e);
+                connectDialog.dismiss();
+                ToastUtils.showShort("主机连接中断");
+                socketState = false;
+            }
+
+            @Override
+            public void onSocketDisconnection(ConnectionInfo info, String action, Exception e) {//服务器连接中断
+                super.onSocketDisconnection(info, action, e);
+                LogUtils.v("onSocketDisconnection---" + e.toString());
+                ToastUtils.showShort("主机连接中断");
+                socketState = false;
+            }
+
+            @Override
+            public void onSocketConnectionSuccess(ConnectionInfo info, String action) {
+                super.onSocketConnectionSuccess(info, action);
+                if (connectDialog != null) {
+                    connectDialog.dismiss();
+                    ToastUtils.showShort("连接成功");
+                    socketState = true;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (socketState) {
+                                detailPlayer.startPlayLogic();//视频播放
+                            }
+                        }
+                    });
+
+                }
+            }
+
+            @Override
+            public void onSocketConnectionFailed(ConnectionInfo info, String action, Exception e) {
+                super.onSocketConnectionFailed(info, action, e);
+                LogUtils.v("onSocketConnectionFailed---" + e.toString());
+                ToastUtils.showShort("主机未开启");
+                socketState = false;
+            }
+
+            @Override
+            public void onSocketReadResponse(ConnectionInfo info, String action, OriginalData data) {
+                super.onSocketReadResponse(info, action, data);
+                String str = ConvertUtils.bytes2HexString(data.getBodyBytes());
+                LogUtils.v("onSocketReadResponse---" + str);
+                tvNoVideo.setText(str);
+            }
+
+            @Override
+            public void onSocketWriteResponse(ConnectionInfo info, String action, ISendable data) {
+                super.onSocketWriteResponse(info, action, data);
+                String str = ConvertUtils.bytes2HexString(data.parse());
+                LogUtils.v("onSocketWriteResponse--" + str);
+
+            }
+        });
+    }
+
+    /**
+     * 发送和接收socket数据
+     */
+    private void sendAndGetSocketData(byte[] msg) {
+        manager.send(new TestSendData(msg));
+
+    }
+
 
     /**
      * 档位选择按钮变化
@@ -561,6 +726,66 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     }
 
     /**
+     * 摆臂调档点击
+     */
+    @OnClick({R.id.ibLeft, R.id.ibRight})
+    public void onIbClicked(View view) {
+        switch (view.getId()) {
+            case R.id.ibLeft:
+
+                if (gear > 1) {
+                    gear--;
+                    //TODO 摆臂调档 -
+                } else {
+                    ToastUtils.showShort("当前已是最低档！");
+                }
+
+                break;
+            case R.id.ibRight:
+
+                if (gear < 9) {
+                    gear++;
+                    //TODO 摆臂调档 +
+                } else {
+                    ToastUtils.showShort("当前已是最高档！");
+                }
+                break;
+
+
+        }
+        tvGradeNum.setText(gear + "");
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        detailPlayer.onVideoResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        detailPlayer.onVideoPause();
+    }
+
+
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(batteryChangedReceiver);
+        EventBus.getDefault().unregister(this);
+        if (connectDialog != null) {
+            connectDialog.dismiss();
+            connectDialog = null;
+        }
+        if (closeDialog != null) {
+            closeDialog.dismiss();
+            closeDialog = null;
+        }
+        GSYVideoManager.releaseAllVideos();
+    }
+
+    /**
      * 退出应用程序
      */
     public void AppExit() {
@@ -575,5 +800,46 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             showCloseDialog();
         }
         return true;
+    }
+
+    @Override
+    public void photoGraphSucceed() {
+        ToastUtils.showShort("抓拍成功");
+    }
+
+    @Override
+    public void photoGraphErr(String err) {
+        ToastUtils.showShort(err);
+    }
+
+    @Override
+    public void switchoverHostOk(HostDaoBean bean) {
+        this.hostDaobean = bean;
+        isSetHost = true;
+        tvNameDia.setText(bean.getName());
+        tvhIpDia.setText(bean.getHIp());
+        tvhPortDia.setText(bean.getHPort());
+        tvuNameDia.setText(bean.getHName());
+        tvuPw.setText("********");
+        if (socketState) {
+            btnConnect.setText("断开连接");
+        } else {
+            btnConnect.setText("连接主机");
+        }
+
+
+    }
+
+    @Override
+    public void switchoverHostErr() {
+        hostDaobean = null;
+        isSetHost = false;
+        tvNameDia.setText("");
+        tvhIpDia.setText("");
+        tvhPortDia.setText("");
+        tvuNameDia.setText("");
+        tvuPw.setText("");
+        btnConnect.setText("去配置主机");
+
     }
 }
