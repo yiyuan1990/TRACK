@@ -5,8 +5,8 @@
     <color name="colorAccent">#D81B60</color>
     <color name="light_gray">#857e7e7e</color>
     <color name="gray">#999999</color>
-    <color name="gray_5">#09ffffff</color>
-    <color name="gray_10">#05ffffff</color>
+    <color name="gray_5">#1AFFFFFF</color>
+    <color name="gray_10">#33FFFFFF</color>
     <color name="gray_20">#99FFEF5B</color>
     <color name="gray_8">#8AFAED70</color>
     <color name="bg_color">#2c2840</color>

@@ -45,31 +45,32 @@ public class MainModel<T> extends BaseModel {
         threadPool.execute(new Runnable() {
             @Override
             public void run() {
-                detailPlayer.taskShotPic(new GSYVideoShotListener() {
+                detailPlayer.saveFrame(bitmapToFile(), true, new GSYVideoShotSaveListener() {
                     @Override
-                    public void getBitmap(Bitmap bitmap) {
-                        detailPlayer.saveFrame(bitmapToFile(), true, new GSYVideoShotSaveListener() {
-                            @Override
-                            public void result(boolean success, File file) {
-                                if (success) {
-                                    String fileName = FileUtils.getFileNameNoExtension(file);
-                                    PicGreenDaoBean bean = new PicGreenDaoBean();
-                                    bean.setName(fileName);
-                                    getPicDao().insert(bean);
+                    public void result(boolean success, File file) {
+                        if (success) {
+                            String fileName = FileUtils.getFileNameNoExtension(file);
+                            PicGreenDaoBean bean = new PicGreenDaoBean();
+                            bean.setName(fileName);
+                            getPicDao().insert(bean);
 
-                                    List<PicGreenDaoBean> picGreenDaoBeans = getPicDao().loadAll();
-                                    for (PicGreenDaoBean bean2 : picGreenDaoBeans) {
-                                        LogUtils.vTag("SJR", bean2.getName());
-                                    }
-                                    iResult.Succeed();
-                                } else {
-                                    iResult.Failure("抓拍失败");
-                                }
-
+                            List<PicGreenDaoBean> picGreenDaoBeans = getPicDao().loadAll();
+                            for (PicGreenDaoBean bean2 : picGreenDaoBeans) {
+                                LogUtils.vTag("SJR", bean2.getName());
                             }
-                        });
+                            iResult.Succeed();
+                        } else {
+                            iResult.Failure("抓拍失败");
+                        }
+
                     }
-                }, true);
+                });
+//                detailPlayer.taskShotPic(new GSYVideoShotListener() {
+//                    @Override
+//                    public void getBitmap(Bitmap bitmap) {
+//
+//                    }
+//                }, true);
             }
         });
     }

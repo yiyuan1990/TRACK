@@ -25,6 +25,7 @@ import com.luoxudong.app.threadpool.ThreadPoolHelp;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
 import com.shuyu.gsyvideoplayer.model.VideoOptionModel;
+import com.shuyu.gsyvideoplayer.video.base.GSYVideoView;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.xuhao.didi.core.iocore.interfaces.ISendable;
 import com.xuhao.didi.core.pojo.OriginalData;
@@ -177,12 +178,16 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     @BindView(R.id.rockerViewRight)
     RockerView rockerViewRight;
     //播放器
-    @BindView(R.id.rlBotMatch)
-    RelativeLayout rlBotMatch;
     @BindView(R.id.detail_player)
     EmptyControlVideo detailPlayer;
-    //    @BindView(R.id.surfaceView)
-//    SurfaceView mSurfaceView;
+    //操作显示（隐藏）
+    @BindView(R.id.btnHandle)
+    ImageView btnHandle;
+    //重新加载视频
+    @BindView(R.id.btnRePlay)
+    ImageView btnRePlay;
+
+
     //电池广播接收数据
     private static final String BATTERY_STATUS_CHARGING = "BATTERY_STATUS_CHARGING";
     private static final String BATTERY_STATUS_FULL = "BATTERY_STATUS_FULL";
@@ -313,22 +318,21 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         list.add(videoOptionModel);
 
         GSYVideoManager.instance().setOptionModelList(list);
-        detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
         detailPlayer.setVideoAllCallBack(new GSYSampleCallBack() {
+
             @Override
             public void onPrepared(String url, Object... objects) {
                 super.onPrepared(url, objects);
                 LogUtils.eTag("SJR", "onPrepared-->" + url);
+                detailPlayer.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onAutoComplete(String url, Object... objects) {
                 super.onAutoComplete(url, objects);
                 LogUtils.eTag("SJR", "onAutoComplete");
-                //停止推流后回调（意外数据丢失）
-                if (socketState) {
-                    detailPlayer.startPlayLogic();//视频播放
-                }
+                //停止Service后回调
+
 
             }
 
@@ -345,10 +349,11 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
 
 
     private boolean isSpread = false;
+    private boolean isRockerViewHide = true;
 
     @OnClick({R.id.ibXJD, R.id.tvSuDu, R.id.ibXJD2, R.id.tvSuDu2, R.id.ibXJD3, R.id.tvSuDu3,
             R.id.llDeploy, R.id.llAutoF, R.id.llLedS, R.id.llPhoto, R.id.llConnect, R.id.llClose,
-            R.id.ibPhotograph})
+            R.id.ibPhotograph, R.id.btnHandle, R.id.btnRePlay})
     public void onViewClicked(View view) {
 
         switch (view.getId()) {
@@ -399,7 +404,8 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             case R.id.llAutoF://自动对焦
                 break;
             case R.id.llLedS://LED灯
-
+                int currentState = detailPlayer.getCurrentState();
+                ToastUtils.showShort("" + currentState);
                 break;
             case R.id.llPhoto://照片
                 startActivity(new Intent(MainAct.this, PictureAct.class));
@@ -420,6 +426,28 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 }
 
 
+                break;
+            case R.id.btnHandle://操作盘控制（显示，隐藏)
+                if (isRockerViewHide){
+                    btnHandle.setBackgroundResource(R.mipmap.ic_handle_b);
+                    rockerViewLeft.setVisibility(View.VISIBLE);
+                    rockerViewRight.setVisibility(View.VISIBLE);
+                    isRockerViewHide = false;
+                }else {
+                    btnHandle.setBackgroundResource(R.mipmap.ic_handle_a);
+                    rockerViewLeft.setVisibility(View.GONE);
+                    rockerViewRight.setVisibility(View.GONE);
+                    isRockerViewHide = true;
+                }
+
+
+                break;
+            case R.id.btnRePlay://重新加载视频
+
+                if (socketState) {
+                    detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
+                    detailPlayer.startPlayLogic();//视频播放
+                }
                 break;
 
         }
@@ -462,7 +490,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             public void onClick(View v) {
                 if (isSetHost) {
                     if (socketState) {
-                        manager.disconnect();//断开无效啊
+                        manager.disconnect();//主动断开socket
                     } else {
                         String mIp = hostDaobean.getHIp();
                         String strPort = hostDaobean.getHPort();
@@ -514,16 +542,21 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             public void onSocketIOThreadShutdown(String action, Exception e) {//主动中断连接
                 super.onSocketIOThreadShutdown(action, e);
                 connectDialog.dismiss();
-                ToastUtils.showShort("主机连接中断");
+                ToastUtils.showShort("主机连接断开");
                 socketState = false;
+                detailPlayer.onVideoPause();
+                detailPlayer.setVisibility(View.INVISIBLE);
+
             }
 
             @Override
             public void onSocketDisconnection(ConnectionInfo info, String action, Exception e) {//服务器连接中断
                 super.onSocketDisconnection(info, action, e);
                 LogUtils.v("onSocketDisconnection---" + e.toString());
-                ToastUtils.showShort("主机连接中断");
+                ToastUtils.showShort("主机连接断开");
                 socketState = false;
+                detailPlayer.onVideoPause();
+                detailPlayer.setVisibility(View.INVISIBLE);
             }
 
             @Override
@@ -537,6 +570,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                         @Override
                         public void run() {
                             if (socketState) {
+                                detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
                                 detailPlayer.startPlayLogic();//视频播放
                             }
                         }
@@ -558,7 +592,6 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 super.onSocketReadResponse(info, action, data);
                 String str = ConvertUtils.bytes2HexString(data.getBodyBytes());
                 LogUtils.v("onSocketReadResponse---" + str);
-                tvNoVideo.setText(str);
             }
 
             @Override
@@ -760,13 +793,17 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     @Override
     protected void onResume() {
         super.onResume();
-        detailPlayer.onVideoResume();
+//        detailPlayer.onVideoResume();
+//        if (socketState) {
+//            detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
+//            detailPlayer.startPlayLogic();//视频播放
+//        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        detailPlayer.onVideoPause();
+//        detailPlayer.onVideoPause();
     }
 
 
