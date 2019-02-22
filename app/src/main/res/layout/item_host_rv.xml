@@ -158,7 +158,7 @@
             android:id="@+id/btnConnectIn"
             android:layout_width="@dimen/dp_50"
             android:layout_height="@dimen/dp_50"
-            android:background="@drawable/edit_bg"
+            android:background="@drawable/btn_host_shape"
             android:gravity="center"
             android:text="连接"
             android:textColor="@color/yellow"
