@@ -5,10 +5,10 @@ import com.xuhao.didi.core.iocore.interfaces.ISendable;
 /**
  * Created by ShiJunRan on 2019/2/18
  */
-public class TestSendData implements ISendable {
+public class SendData implements ISendable {
     private byte[] msg;
 
-    public TestSendData(byte[] msg) {
+    public SendData(byte[] msg) {
         this.msg = msg;
     }
 

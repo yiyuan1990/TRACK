@@ -31,70 +31,77 @@
             android:textSize="@dimen/sp_22"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/etName"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_35"
-            android:layout_marginTop="@dimen/dp_20"
-            android:background="@drawable/edit_bg"
-            android:hint="自定义主机名"
-            android:paddingLeft="@dimen/dp_5"
-            android:paddingRight="@dimen/dp_5"
-            android:textColor="@color/yellow"
-            android:textColorHint="@color/gray_8"
-            android:textStyle="bold" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etOne"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_35"
-            android:layout_marginTop="@dimen/dp_20"
-            android:background="@drawable/edit_bg"
-            android:hint="IP:端口号"
-            android:paddingLeft="@dimen/dp_5"
-            android:paddingRight="@dimen/dp_5"
-            android:textColor="@color/yellow"
-            android:textColorHint="@color/gray_8"
-            android:textStyle="bold" />
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_35"
+                android:layout_marginTop="@dimen/dp_20"
+                android:background="@drawable/edit_bg"
+                android:hint="自定义主机名"
+                android:paddingLeft="@dimen/dp_5"
+                android:paddingRight="@dimen/dp_5"
+                android:textColor="@color/yellow"
+                android:textColorHint="@color/gray_8"
+                android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/etTwo"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_35"
-            android:layout_marginTop="@dimen/dp_20"
-            android:background="@drawable/edit_bg"
-            android:hint="用户名、默认admin"
-            android:paddingLeft="@dimen/dp_5"
-            android:paddingRight="@dimen/dp_5"
-            android:textColor="@color/yellow"
-            android:textColorHint="@color/gray_8"
-            android:textStyle="bold" />
+            <EditText
+                android:id="@+id/etOne"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_35"
+                android:layout_marginTop="@dimen/dp_20"
+                android:background="@drawable/edit_bg"
+                android:hint="IP:端口号"
+                android:paddingLeft="@dimen/dp_5"
+                android:paddingRight="@dimen/dp_5"
+                android:textColor="@color/yellow"
+                android:textColorHint="@color/gray_8"
+                android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/etThree"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_35"
-            android:layout_marginTop="@dimen/dp_20"
-            android:background="@drawable/edit_bg"
-            android:hint="密码"
-            android:paddingLeft="@dimen/dp_5"
-            android:paddingRight="@dimen/dp_5"
-            android:textColor="@color/yellow"
-            android:textColorHint="@color/gray_8"
-            android:textStyle="bold" />
+            <EditText
+                android:id="@+id/etTwo"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_35"
+                android:layout_marginTop="@dimen/dp_20"
+                android:background="@drawable/edit_bg"
+                android:hint="用户名、默认admin"
+                android:paddingLeft="@dimen/dp_5"
+                android:paddingRight="@dimen/dp_5"
+                android:textColor="@color/yellow"
+                android:textColorHint="@color/gray_8"
+                android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/etFour"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_35"
-            android:layout_marginTop="@dimen/dp_20"
-            android:background="@drawable/edit_bg"
-            android:hint="摄像头配置  IP:端口号"
-            android:paddingLeft="@dimen/dp_5"
-            android:paddingRight="@dimen/dp_5"
-            android:textColor="@color/yellow"
-            android:textColorHint="@color/gray_8"
-            android:textStyle="bold" />
+            <EditText
+                android:id="@+id/etThree"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_35"
+                android:layout_marginTop="@dimen/dp_20"
+                android:background="@drawable/edit_bg"
+                android:hint="密码"
+                android:paddingLeft="@dimen/dp_5"
+                android:paddingRight="@dimen/dp_5"
+                android:textColor="@color/yellow"
+                android:textColorHint="@color/gray_8"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etFour"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_35"
+                android:layout_marginTop="@dimen/dp_20"
+                android:background="@drawable/edit_bg"
+                android:hint="摄像头配置  IP:端口号"
+                android:paddingLeft="@dimen/dp_5"
+                android:paddingRight="@dimen/dp_5"
+                android:textColor="@color/yellow"
+                android:textColorHint="@color/gray_8"
+                android:textStyle="bold" />
+        </LinearLayout>
 
 
         <Button
@@ -104,11 +111,12 @@
             android:layout_marginLeft="@dimen/dp_20"
             android:layout_marginTop="@dimen/dp_30"
             android:layout_marginRight="@dimen/dp_20"
+            android:layout_marginBottom="@dimen/dp_30"
             android:background="@drawable/button_bg"
-            android:textStyle="bold"
+            android:text="确定"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_18"
-            android:text="确定" />
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout

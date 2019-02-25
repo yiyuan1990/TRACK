@@ -677,7 +677,7 @@
             kongqw:areaBackground="@color/gray_5"
             kongqw:rockerBackground="@color/gray_10"
             kongqw:rockerRadius="20dp"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
         <com.kongqw.rockerlibrary.view.RockerView
             android:id="@+id/rockerViewRight"
@@ -689,7 +689,7 @@
             kongqw:areaBackground="@color/gray_5"
             kongqw:rockerBackground="@color/gray_10"
             kongqw:rockerRadius="20dp"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
     </RelativeLayout>
 

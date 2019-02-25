@@ -8,13 +8,12 @@ import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.blankj.utilcode.util.ConvertUtils;
@@ -25,7 +24,6 @@ import com.luoxudong.app.threadpool.ThreadPoolHelp;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
 import com.shuyu.gsyvideoplayer.model.VideoOptionModel;
-import com.shuyu.gsyvideoplayer.video.base.GSYVideoView;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.xuhao.didi.core.iocore.interfaces.ISendable;
 import com.xuhao.didi.core.pojo.OriginalData;
@@ -43,11 +41,11 @@ import com.zkkc.track.entity.BatteryStateBean;
 import com.zkkc.track.entity.HostDaoBean;
 import com.zkkc.track.moudle.config.activity.ConfigAct;
 import com.zkkc.track.moudle.home.contract.MainContract;
-import com.zkkc.track.moudle.home.entity.TestSendData;
+import com.zkkc.track.moudle.home.entity.SendData;
 import com.zkkc.track.moudle.home.presenter.MainPresenter;
+import com.zkkc.track.moudle.home.utils.HexResultUtils;
 import com.zkkc.track.moudle.pic.activity.PictureAct;
 import com.zkkc.track.receiver.BatteryChangedReceiver;
-import com.zkkc.track.utils.SPUtil;
 import com.zkkc.track.widget.EmptyControlVideo;
 import com.zkkc.track.widget.HorTextClock;
 import com.zkkc.track.widget.seekbar.VerticalSeekBar;
@@ -242,6 +240,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         super.onCreate(savedInstanceState);
         fullscreen(true);
         EventBus.getDefault().register(this);
+        HexResultUtils.hideBottomUIMenu(this);
     }
 
     @Override
@@ -262,7 +261,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         //设置seekBar的样式和大小相关
         ledPro.setSelectColor(getResources().getColor(R.color.yellow));
         ledPro.setThumb(R.mipmap.bg_seekbar);
-        ledPro.setThumbSize(30, 20);
+        ledPro.setThumbSize(35, 25);
         ledPro.setProgress(0);
         setOnClicked();//LED灯seekBar亮度监听
         //电量广播
@@ -280,6 +279,52 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         //播放器配置初始化
         initRTSPVideo();
 
+        ibUp.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        LogUtils.v("ACTION_DOWN");
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendBBUp());
+                            manager.send(sendData);
+                        }
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        LogUtils.v("ACTION_UP");
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendBBStop());
+                            manager.send(sendData);
+                        }
+                        break;
+                }
+                return false;
+            }
+        });
+        ibDown.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        LogUtils.v("ACTION_DOWN");
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendBBDown());
+                            manager.send(sendData);
+                        }
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        LogUtils.v("ACTION_UP");
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendBBStop());
+                            manager.send(sendData);
+                        }
+                        break;
+                }
+                return false;
+            }
+        });
     }
 
     private void initRTSPVideo() {
@@ -366,6 +411,13 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                     tvSuDu.setTextColor(getResources().getColor(R.color.green));
                     isSpread = false;
                     //TODO 行进选档
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.sendGoSpeed(1));
+                        manager.send(sendData);
+                    }
+                    ToastUtils.showShort("低速");
+
+
                 } else {
                     reSetButBg(1);
                     tvSuDu.setText("低速");
@@ -381,6 +433,11 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                     tvSuDu.setTextColor(getResources().getColor(R.color.violet));
                     isSpread = false;
                     //TODO 行进选档
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.sendGoSpeed(2));
+                        manager.send(sendData);
+                    }
+                    ToastUtils.showShort("中速");
                 }
                 break;
             case R.id.ibXJD3:
@@ -391,6 +448,11 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                     tvSuDu.setTextColor(getResources().getColor(R.color.colorAccent));
                     isSpread = false;
                     //TODO 行进选档
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.sendGoSpeed(3));
+                        manager.send(sendData);
+                    }
+                    ToastUtils.showShort("高速");
                 }
 
                 break;
@@ -402,6 +464,9 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 startActivity(new Intent(MainAct.this, ConfigAct.class));
                 break;
             case R.id.llAutoF://自动对焦
+//                byte[] s = HexResultUtils.sendZJUp();
+//                LogUtils.v("CRC16--->"+ HexUtil.byte2HexStr(s));
+
                 break;
             case R.id.llLedS://LED灯
                 int currentState = detailPlayer.getCurrentState();
@@ -428,12 +493,12 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
 
                 break;
             case R.id.btnHandle://操作盘控制（显示，隐藏)
-                if (isRockerViewHide){
+                if (isRockerViewHide) {
                     btnHandle.setBackgroundResource(R.mipmap.ic_handle_b);
                     rockerViewLeft.setVisibility(View.VISIBLE);
                     rockerViewRight.setVisibility(View.VISIBLE);
                     isRockerViewHide = false;
-                }else {
+                } else {
                     btnHandle.setBackgroundResource(R.mipmap.ic_handle_a);
                     rockerViewLeft.setVisibility(View.GONE);
                     rockerViewRight.setVisibility(View.GONE);
@@ -445,7 +510,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             case R.id.btnRePlay://重新加载视频
 
                 if (socketState) {
-                    detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
+                    detailPlayer.setUp(HexResultUtils.toPlayUrl(hostDaobean, Constant.IS_DEBUG_URL), false, "");
                     detailPlayer.startPlayLogic();//视频播放
                 }
                 break;
@@ -488,6 +553,8 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String s = HexResultUtils.toPlayUrl(hostDaobean, Constant.IS_DEBUG_URL);
+                LogUtils.v(s);
                 if (isSetHost) {
                     if (socketState) {
                         manager.disconnect();//主动断开socket
@@ -532,7 +599,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
 
             @Override
             public int getBodyLength(byte[] header, ByteOrder byteOrder) {
-                return 4;
+                return 12;
             }
         });
         manager.option(optionsBuilder.build());
@@ -566,11 +633,23 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                     connectDialog.dismiss();
                     ToastUtils.showShort("连接成功");
                     socketState = true;
+                    //查询行进档位
+                    //TODO----------查询档位(行进档位和摆臂档位)，----暂时
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.sendGoQuery());
+                        manager.send(sendData);
+                        sendData = new SendData(HexResultUtils.sendBBSpeed(3));
+                        manager.send(sendData);
+                    }
+
+
+                    //播放视频
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             if (socketState) {
-                                detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
+
+                                detailPlayer.setUp(HexResultUtils.toPlayUrl(hostDaobean, Constant.IS_DEBUG_URL), false, "");
                                 detailPlayer.startPlayLogic();//视频播放
                             }
                         }
@@ -590,8 +669,9 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             @Override
             public void onSocketReadResponse(ConnectionInfo info, String action, OriginalData data) {
                 super.onSocketReadResponse(info, action, data);
+                String s = ConvertUtils.bytes2HexString(data.getHeadBytes());
                 String str = ConvertUtils.bytes2HexString(data.getBodyBytes());
-                LogUtils.v("onSocketReadResponse---" + str);
+                LogUtils.v("onSocketReadResponse---" + s + "----" + str);
             }
 
             @Override
@@ -602,14 +682,6 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
 
             }
         });
-    }
-
-    /**
-     * 发送和接收socket数据
-     */
-    private void sendAndGetSocketData(byte[] msg) {
-        manager.send(new TestSendData(msg));
-
     }
 
 
@@ -639,6 +711,8 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         }
     }
 
+    private SendData sendData;
+
     /**
      * 遥杆监听
      */
@@ -654,11 +728,53 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             @Override
             public void direction(RockerView.Direction direction) {
                 Log.d("SJR", "direction: " + direction);
+                if (!socketState) {
+                    return;
+                }
+                switch (direction) {
+                    case DIRECTION_UP:
+                        sendData = new SendData(HexResultUtils.sendZJUp());
+                        manager.send(sendData);
+                        break;
+                    case DIRECTION_UP_RIGHT:
+                        sendData = new SendData(HexResultUtils.sendZJUpAndRight());
+                        manager.send(sendData);
+                        break;
+                    case DIRECTION_RIGHT:
+                        sendData = new SendData(HexResultUtils.sendZJRight());
+                        manager.send(sendData);
+                        break;
+                    case DIRECTION_DOWN_RIGHT:
+                        sendData = new SendData(HexResultUtils.sendZJDownAndRight());
+                        manager.send(sendData);
+                        break;
+                    case DIRECTION_DOWN:
+                        sendData = new SendData(HexResultUtils.sendZJDown());
+                        manager.send(sendData);
+                        break;
+                    case DIRECTION_DOWN_LEFT:
+                        sendData = new SendData(HexResultUtils.sendZJDownAndLeft());
+                        manager.send(sendData);
+                        break;
+                    case DIRECTION_LEFT:
+                        sendData = new SendData(HexResultUtils.sendZJLeft());
+                        manager.send(sendData);
+                        break;
+                    case DIRECTION_UP_LEFT:
+                        sendData = new SendData(HexResultUtils.sendZJUpAndLeft());
+                        manager.send(sendData);
+                        break;
+                }
             }
 
             @Override
             public void onFinish() {
                 Log.d("SJR", "onFinish");
+                if (!socketState) {
+                    return;
+                }
+                sendData = new SendData(HexResultUtils.sendZJStopMove());
+                manager.send(sendData);
             }
         });
 
@@ -769,6 +885,10 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 if (gear > 1) {
                     gear--;
                     //TODO 摆臂调档 -
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.sendBBSpeed(2));
+                        manager.send(sendData);
+                    }
                 } else {
                     ToastUtils.showShort("当前已是最低档！");
                 }
@@ -779,6 +899,10 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 if (gear < 9) {
                     gear++;
                     //TODO 摆臂调档 +
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.sendBBSpeed(1));
+                        manager.send(sendData);
+                    }
                 } else {
                     ToastUtils.showShort("当前已是最高档！");
                 }
@@ -795,7 +919,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         super.onResume();
 //        detailPlayer.onVideoResume();
 //        if (socketState) {
-//            detailPlayer.setUp(Constant.RTSP_STREAM_URL, false, "");
+//            detailPlayer.setUp(HexResultUtils.toPlayUrl(hostDaobean,Constant.IS_DEBUG_URL), false, "");
 //            detailPlayer.startPlayLogic();//视频播放
 //        }
     }
