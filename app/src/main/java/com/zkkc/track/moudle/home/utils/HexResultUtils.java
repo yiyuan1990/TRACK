@@ -359,6 +359,65 @@ public class HexResultUtils {
 
         return msg;
     }
+    /**
+     * 摄像头控制上下方向
+     *
+     * @return
+     */
+    public static byte[] sendSSTUpDown(int num) {
+        byte[] msg = new byte[9];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x01;
 
+        msg[4] = (byte) 0x2D;
+        msg[5] = (byte) 0x01;
+        if (num == 1) {//增加档
+            msg[6] = (byte) 0x01;
+            msg[7] = (byte) 0xB2;
+            msg[8] = (byte) 0xE6;
+        } else if (num == 2) {//减少档
+            msg[6] = (byte) 0x02;
+            msg[7] = (byte) 0xB3;
+            msg[8] = (byte) 0xA6;
+        } else {//查询档位
+            msg[6] = (byte) 0x03;
+            msg[7] = (byte) 0x73;
+            msg[8] = (byte) 0x67;
+        }
+
+        return msg;
+    }
+    /**
+     * 摄像头控制左右方向
+     *
+     * @return
+     */
+    public static byte[] sendSSTLeftRight(int num) {
+        byte[] msg = new byte[9];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x01;
+
+        msg[4] = (byte) 0x2D;
+        msg[5] = (byte) 0x01;
+        if (num == 1) {//增加档
+            msg[6] = (byte) 0x01;
+            msg[7] = (byte) 0xB2;
+            msg[8] = (byte) 0xE6;
+        } else if (num == 2) {//减少档
+            msg[6] = (byte) 0x02;
+            msg[7] = (byte) 0xB3;
+            msg[8] = (byte) 0xA6;
+        } else {//查询档位
+            msg[6] = (byte) 0x03;
+            msg[7] = (byte) 0x73;
+            msg[8] = (byte) 0x67;
+        }
+
+        return msg;
+    }
 
 }
