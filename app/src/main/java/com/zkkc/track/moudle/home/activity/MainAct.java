@@ -240,7 +240,6 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
         super.onCreate(savedInstanceState);
         fullscreen(true);
         EventBus.getDefault().register(this);
-        HexResultUtils.hideBottomUIMenu(this);
     }
 
     @Override
