@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg_color"
     android:orientation="horizontal"
-    android:paddingRight="@dimen/dp_35">
+    android:paddingRight="@dimen/dp_20">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -124,7 +124,7 @@
         android:layout_height="match_parent"
         android:layout_marginLeft="@dimen/dp_10"
         android:layout_marginTop="@dimen/dp_20"
-        android:layout_marginRight="@dimen/dp_20"
+        android:layout_marginRight="@dimen/dp_10"
         android:layout_marginBottom="@dimen/dp_20"
         android:layout_weight="1"
         android:background="@drawable/add_bg"
@@ -153,4 +153,11 @@
         </android.support.v7.widget.RecyclerView>
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnClose"
+        android:layout_width="@dimen/dp_30"
+        android:layout_height="@dimen/dp_30"
+        android:layout_marginTop="@dimen/dp_10"
+        android:background="@mipmap/ic_close_a" />
 </LinearLayout>

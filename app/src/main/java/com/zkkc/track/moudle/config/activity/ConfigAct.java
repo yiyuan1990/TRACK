@@ -19,8 +19,6 @@ import com.zkkc.track.moudle.config.adapter.AdHostShow;
 import com.zkkc.track.moudle.config.contract.ConfigContract;
 import com.zkkc.track.moudle.config.presenter.ConfigPresenter;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +46,8 @@ public class ConfigAct extends BaseActivity<ConfigContract.View, ConfigContract.
     Button btnAdd;
     @BindView(R.id.rvHost)
     RecyclerView rvHost;
+    @BindView(R.id.btnClose)
+    Button btnClose;
 
 
     List<HostDaoBean> mList = new ArrayList<HostDaoBean>();
@@ -195,5 +195,10 @@ public class ConfigAct extends BaseActivity<ConfigContract.View, ConfigContract.
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @OnClick(R.id.btnClose)
+    public void onClicked() {
+        finish();
     }
 }
