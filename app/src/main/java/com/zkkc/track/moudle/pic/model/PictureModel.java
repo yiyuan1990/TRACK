@@ -28,7 +28,7 @@ public class PictureModel<T> extends BaseModel {
             @Override
             public void run() {
                 File filesDir = Environment.getExternalStorageDirectory();
-                File appDir = new File(filesDir, "a_track");
+                File appDir = new File(filesDir, "cip_track");
                 if (!appDir.exists()) {
                     appDir.mkdir();
                 }

@@ -110,7 +110,7 @@ public class MainModel<T> extends BaseModel {
     private File bitmapToFile() {
         String nowDate = getNowDate();
         File filesDir = Environment.getExternalStorageDirectory();
-        File appDir = new File(filesDir, "a_track");
+        File appDir = new File(filesDir, "cip_track");
         if (!appDir.exists()) {
             appDir.mkdir();
         }

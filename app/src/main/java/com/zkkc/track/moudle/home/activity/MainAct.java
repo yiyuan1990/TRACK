@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.blankj.utilcode.util.ConvertUtils;
@@ -174,7 +175,17 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     @BindView(R.id.rockerViewLeft)
     RockerView rockerViewLeft;
     @BindView(R.id.rockerViewRight)
-    RockerView rockerViewRight;
+    RelativeLayout rockerViewRight;
+    @BindView(R.id.ivUp)
+    ImageButton ivUp;
+    @BindView(R.id.ivDown)
+    ImageButton ivDown;
+    @BindView(R.id.ivLeft)
+    ImageButton ivLeft;
+    @BindView(R.id.ivRight)
+    ImageButton ivRight;
+
+
     //播放器
     @BindView(R.id.detail_player)
     EmptyControlVideo detailPlayer;
@@ -184,6 +195,10 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     //重新加载视频
     @BindView(R.id.btnRePlay)
     ImageView btnRePlay;
+
+
+    @BindView(R.id.tvTest)
+    TextView tvTest;
 
 
     //电池广播接收数据
@@ -321,6 +336,54 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                         }
                         break;
                 }
+                return false;
+            }
+        });
+
+        ibAdd.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ibAdd.setBackgroundResource(R.mipmap.s_add_a);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTTJ(1));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        ibAdd.setBackgroundResource(R.mipmap.s_add);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTTJ(3));
+                            manager.send(sendData);
+                        }
+                        break;
+                }
+
+                return false;
+            }
+        });
+        ibSubtract.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ibSubtract.setBackgroundResource(R.mipmap.s_minus_a);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTTJ(2));
+                            manager.send(sendData);
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        ibSubtract.setBackgroundResource(R.mipmap.s_minus);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTTJ(3));
+                            manager.send(sendData);
+                        }
+                        break;
+                }
+
                 return false;
             }
         });
@@ -465,11 +528,16 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             case R.id.llAutoF://自动对焦
 //                byte[] s = HexResultUtils.sendZJUp();
 //                LogUtils.v("CRC16--->"+ HexUtil.byte2HexStr(s));
-
+                if (socketState) {
+                    sendData = new SendData(HexResultUtils.sendSSTZDJJ());
+                    manager.send(sendData);
+                }
                 break;
             case R.id.llLedS://LED灯
-                int currentState = detailPlayer.getCurrentState();
-                ToastUtils.showShort("" + currentState);
+                if (socketState) {
+                    sendData = new SendData(HexResultUtils.queryBBSpeed());
+                    manager.send(sendData);
+                }
                 break;
             case R.id.llPhoto://照片
                 startActivity(new Intent(MainAct.this, PictureAct.class));
@@ -593,12 +661,12 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             @Override
             public int getHeaderLength() {
 
-                return 1;
+                return 8;
             }
 
             @Override
             public int getBodyLength(byte[] header, ByteOrder byteOrder) {
-                return 12;
+                return 10;
             }
         });
         manager.option(optionsBuilder.build());
@@ -635,10 +703,16 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                     //查询行进档位
                     //TODO----------查询档位(行进档位和摆臂档位)，----暂时
                     if (socketState) {
+                        //速度档位查询
                         sendData = new SendData(HexResultUtils.sendGoQuery());
                         manager.send(sendData);
-                        sendData = new SendData(HexResultUtils.sendBBSpeed(3));
-                        manager.send(sendData);
+//                        //摆臂档位查询
+//                        sendData = new SendData(HexResultUtils.sendBBSpeed(3));
+//                        manager.send(sendData);
+//                        //查询LED灯光亮度
+//                        sendData = new SendData(HexResultUtils.queryLEDLD());
+//                        manager.send(sendData);
+
                     }
 
 
@@ -668,17 +742,30 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             @Override
             public void onSocketReadResponse(ConnectionInfo info, String action, OriginalData data) {
                 super.onSocketReadResponse(info, action, data);
-                String s = ConvertUtils.bytes2HexString(data.getHeadBytes());
-                String str = ConvertUtils.bytes2HexString(data.getBodyBytes());
+                final String s = ConvertUtils.bytes2HexString(data.getHeadBytes());
+                final String str = ConvertUtils.bytes2HexString(data.getBodyBytes());
                 LogUtils.v("onSocketReadResponse---" + s + "----" + str);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tvSos.setText("HeadBytes:" + s + "\nBodyBytes" + str);
+                    }
+                });
             }
 
             @Override
             public void onSocketWriteResponse(ConnectionInfo info, String action, ISendable data) {
                 super.onSocketWriteResponse(info, action, data);
-                String str = ConvertUtils.bytes2HexString(data.parse());
+                final String str = ConvertUtils.bytes2HexString(data.parse());
                 LogUtils.v("onSocketWriteResponse--" + str);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tvTest.setText(str);
 
+                    }
+                });
             }
         });
     }
@@ -776,22 +863,101 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 manager.send(sendData);
             }
         });
-
-        rockerViewRight.setCallBackMode(RockerView.CallBackMode.CALL_BACK_MODE_STATE_CHANGE);
-        rockerViewRight.setOnShakeListener(RockerView.DirectionMode.DIRECTION_4_ROTATE_45, new RockerView.OnShakeListener() {
+        ivUp.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onStart() {
-                Log.d("SJR", "onStart");
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ivUp.setBackgroundResource(R.mipmap.up_tr_a);
+                        LogUtils.e("RRRRRR_ACTION_DOWN");
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTUpDown(1));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        LogUtils.e("RRRRRR_ACTION_UP");
+                        ivUp.setBackgroundResource(R.mipmap.up_tr);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTStop(1));
+                            manager.send(sendData);
+                        }
+                        break;
+                }
+                return false;
             }
-
+        });
+        ivDown.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void direction(RockerView.Direction direction) {
-                Log.d("SJR", "direction: " + direction);
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ivDown.setBackgroundResource(R.mipmap.down_tr_a);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTUpDown(2));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        ivDown.setBackgroundResource(R.mipmap.down_tr);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTStop(1));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                }
+                return false;
             }
-
+        });
+        ivLeft.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onFinish() {
-                Log.d("SJR", "onFinish");
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ivLeft.setBackgroundResource(R.mipmap.left_tr_a);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTLeftRight(1));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        ivLeft.setBackgroundResource(R.mipmap.left_tr);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTStop(1));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                }
+                return false;
+            }
+        });
+        ivRight.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ivRight.setBackgroundResource(R.mipmap.right_tr_a);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTLeftRight(2));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        ivRight.setBackgroundResource(R.mipmap.right_tr);
+                        if (socketState) {
+                            sendData = new SendData(HexResultUtils.sendSSTStop(1));
+                            manager.send(sendData);
+                        }
+
+                        break;
+                }
+                return false;
             }
         });
 

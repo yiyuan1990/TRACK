@@ -272,12 +272,12 @@ public class HexResultUtils {
         msg[0] = (byte) 0x68;
         msg[1] = (byte) 0x01;
         msg[2] = (byte) 0x03;
-        msg[3] = (byte) 0x01;
+        msg[3] = (byte) 0x00;
 
         msg[4] = (byte) 0x0A;
         msg[5] = (byte) 0x00;
-        msg[6] = (byte) 0x17;
-        msg[7] = (byte) 0x62;
+        msg[6] = (byte) 0xD7;
+        msg[7] = (byte) 0x33;
         return msg;
     }
 
@@ -313,7 +313,24 @@ public class HexResultUtils {
     }
 
     /**
-     * 摆臂速度档位查询、设置+，-
+     * 查询摆臂速度
+     */
+    public static byte[] queryBBSpeed() {
+        byte[] msg = new byte[8];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x00;
+
+        msg[4] = (byte) 0x0D;
+        msg[5] = (byte) 0x00;
+        msg[6] = (byte) 0xE7;
+        msg[7] = (byte) 0x31;
+        return msg;
+    }
+
+    /**
+     * 摆臂速度档位设置+，-
      *
      * @return
      */
@@ -334,16 +351,14 @@ public class HexResultUtils {
             msg[6] = (byte) 0x02;
             msg[7] = (byte) 0xB3;
             msg[8] = (byte) 0xA6;
-        } else {//查询档位
-            msg[6] = (byte) 0x03;
-            msg[7] = (byte) 0x73;
-            msg[8] = (byte) 0x67;
         }
 
         return msg;
     }
+
     /**
      * 摄像头控制上下方向
+     * num  1 上   2 下
      *
      * @return
      */
@@ -354,26 +369,24 @@ public class HexResultUtils {
         msg[2] = (byte) 0x03;
         msg[3] = (byte) 0x01;
 
-        msg[4] = (byte) 0x2D;
+        msg[4] = (byte) 0x30;
         msg[5] = (byte) 0x01;
-        if (num == 1) {//增加档
+        if (num == 1) {//上
             msg[6] = (byte) 0x01;
-            msg[7] = (byte) 0xB2;
-            msg[8] = (byte) 0xE6;
-        } else if (num == 2) {//减少档
+            msg[7] = (byte) 0xB4;
+            msg[8] = (byte) 0x76;
+        } else {//下
             msg[6] = (byte) 0x02;
-            msg[7] = (byte) 0xB3;
-            msg[8] = (byte) 0xA6;
-        } else {//查询档位
-            msg[6] = (byte) 0x03;
-            msg[7] = (byte) 0x73;
-            msg[8] = (byte) 0x67;
+            msg[7] = (byte) 0xB5;
+            msg[8] = (byte) 0x36;
         }
 
         return msg;
     }
+
     /**
      * 摄像头控制左右方向
+     * num  1 左   2 右
      *
      * @return
      */
@@ -384,23 +397,120 @@ public class HexResultUtils {
         msg[2] = (byte) 0x03;
         msg[3] = (byte) 0x01;
 
-        msg[4] = (byte) 0x2D;
+        msg[4] = (byte) 0x31;
         msg[5] = (byte) 0x01;
-        if (num == 1) {//增加档
+        if (num == 1) {//左
             msg[6] = (byte) 0x01;
-            msg[7] = (byte) 0xB2;
-            msg[8] = (byte) 0xE6;
-        } else if (num == 2) {//减少档
+            msg[7] = (byte) 0x74;
+            msg[8] = (byte) 0x27;
+        } else {//右
             msg[6] = (byte) 0x02;
-            msg[7] = (byte) 0xB3;
-            msg[8] = (byte) 0xA6;
-        } else {//查询档位
-            msg[6] = (byte) 0x03;
-            msg[7] = (byte) 0x73;
+            msg[7] = (byte) 0x75;
             msg[8] = (byte) 0x67;
         }
 
         return msg;
     }
 
+    /**
+     * 摄像头控制停止
+     * num  1  上下    2 左右
+     *
+     * @return
+     */
+    public static byte[] sendSSTStop(int num) {
+        byte[] msg = new byte[9];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x01;
+        if (num == 1) {
+            msg[4] = (byte) 0x30;
+            msg[5] = (byte) 0x01;
+
+            msg[6] = (byte) 0x00;
+            msg[7] = (byte) 0x74;
+            msg[8] = (byte) 0xB7;
+        } else {
+            msg[4] = (byte) 0x31;
+            msg[5] = (byte) 0x01;
+
+            msg[6] = (byte) 0x00;
+            msg[7] = (byte) 0xB4;
+            msg[8] = (byte) 0xB6;
+        }
+
+
+        return msg;
+    }
+
+    /**
+     * 摄像头调焦
+     * num  1  +    2  -   3  stop
+     */
+    public static byte[] sendSSTTJ(int num) {
+        byte[] msg = new byte[9];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x01;
+
+        msg[4] = (byte) 0x34;
+        msg[5] = (byte) 0x01;
+        if (num == 1) {
+            msg[6] = (byte) 0x01;
+            msg[7] = (byte) 0x75;
+            msg[8] = (byte) 0x37;
+        } else if (num == 2) {
+            msg[6] = (byte) 0x02;
+            msg[7] = (byte) 0x74;
+            msg[8] = (byte) 0x77;
+        } else {
+            msg[6] = (byte) 0x00;
+            msg[7] = (byte) 0xB5;
+            msg[8] = (byte) 0xF6;
+        }
+
+
+        return msg;
+    }
+
+    /**
+     * 自动聚焦
+     */
+    public static byte[] sendSSTZDJJ() {
+        byte[] msg = new byte[9];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x01;
+
+        msg[4] = (byte) 0x35;
+        msg[5] = (byte) 0x01;
+
+        msg[6] = (byte) 0x00;
+        msg[7] = (byte) 0x75;
+        msg[8] = (byte) 0xA7;
+
+        return msg;
+    }
+
+    /**
+     * 查询LED灯光亮度
+     */
+    public static byte[] queryLEDLD() {
+        byte[] msg = new byte[8];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x00;
+
+        msg[4] = (byte) 0x0E;
+        msg[5] = (byte) 0x00;
+
+        msg[6] = (byte) 0x17;
+        msg[7] = (byte) 0x31;
+
+        return msg;
+    }
 }
