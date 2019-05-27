@@ -44,6 +44,7 @@ import com.zkkc.track.moudle.config.activity.ConfigAct;
 import com.zkkc.track.moudle.home.contract.MainContract;
 import com.zkkc.track.moudle.home.entity.SendData;
 import com.zkkc.track.moudle.home.presenter.MainPresenter;
+import com.zkkc.track.moudle.home.utils.CRC16Util;
 import com.zkkc.track.moudle.home.utils.HexResultUtils;
 import com.zkkc.track.moudle.pic.activity.PictureAct;
 import com.zkkc.track.receiver.BatteryChangedReceiver;
@@ -57,10 +58,13 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 
 import butterknife.BindView;
@@ -210,7 +214,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     private BatteryChangedReceiver batteryChangedReceiver;
     private String batteryType;//充电状态
     private int powNum;//当前电量
-    private int gear = 5;//默认摆臂档数为5档 最高9档
+    private int gear = 3;//默认摆臂档数为5档 最高9档
     private ExecutorService threadPool;
 
 
@@ -661,12 +665,12 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             @Override
             public int getHeaderLength() {
 
-                return 8;
+                return 1;
             }
 
             @Override
             public int getBodyLength(byte[] header, ByteOrder byteOrder) {
-                return 10;
+                return 8;
             }
         });
         manager.option(optionsBuilder.build());
@@ -678,6 +682,8 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 connectDialog.dismiss();
                 ToastUtils.showShort("主机连接断开");
                 socketState = false;
+                //设置tab状态
+                setTabShowState(false);
                 detailPlayer.onVideoPause();
                 detailPlayer.setVisibility(View.INVISIBLE);
 
@@ -689,6 +695,8 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 LogUtils.v("onSocketDisconnection---" + e.toString());
                 ToastUtils.showShort("主机连接断开");
                 socketState = false;
+                //设置tab状态
+                setTabShowState(false);
                 detailPlayer.onVideoPause();
                 detailPlayer.setVisibility(View.INVISIBLE);
             }
@@ -700,19 +708,23 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                     connectDialog.dismiss();
                     ToastUtils.showShort("连接成功");
                     socketState = true;
+                    //设置tab状态
+                    setTabShowState(true);
+
+
                     //查询行进档位
                     //TODO----------查询档位(行进档位和摆臂档位)，----暂时
                     if (socketState) {
                         //速度档位查询
                         sendData = new SendData(HexResultUtils.sendGoQuery());
                         manager.send(sendData);
-//                        //摆臂档位查询
-//                        sendData = new SendData(HexResultUtils.sendBBSpeed(3));
-//                        manager.send(sendData);
-//                        //查询LED灯光亮度
-//                        sendData = new SendData(HexResultUtils.queryLEDLD());
-//                        manager.send(sendData);
-
+                        //摆臂档位查询
+                        sendData = new SendData(HexResultUtils.queryBBSpeed());
+                        manager.send(sendData);
+                        //查询LED灯光亮度
+                        sendData = new SendData(HexResultUtils.queryLEDLD());
+                        manager.send(sendData);
+                        startMyQuery();//实时更新tab数据
                     }
 
 
@@ -737,11 +749,16 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 LogUtils.v("onSocketConnectionFailed---" + e.toString());
                 ToastUtils.showShort("主机未开启");
                 socketState = false;
+                //设置tab状态
+                setTabShowState(false);
             }
 
             @Override
             public void onSocketReadResponse(ConnectionInfo info, String action, OriginalData data) {
                 super.onSocketReadResponse(info, action, data);
+                final byte[] headBytes = data.getHeadBytes();
+                final byte[] bodyBytes = data.getBodyBytes();
+
                 final String s = ConvertUtils.bytes2HexString(data.getHeadBytes());
                 final String str = ConvertUtils.bytes2HexString(data.getBodyBytes());
                 LogUtils.v("onSocketReadResponse---" + s + "----" + str);
@@ -749,7 +766,10 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        tvSos.setText("HeadBytes:" + s + "\nBodyBytes" + str);
+                        doBytes(bodyBytes);
+
+                        tvSos.setText(s + "\n" + str);
+//                        tvSos.setText(headBytes[0]+"-size:"+headBytes.length+"\n"+bodyBytes[0]+"-size:"+bodyBytes.length);
                     }
                 });
             }
@@ -768,6 +788,127 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                 });
             }
         });
+    }
+
+    /**
+     * 实时更新tab数据
+     */
+    Timer timer;
+
+    private void startMyQuery() {
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (socketState) {
+                    sendData = new SendData(HexResultUtils.queryTLY());
+                    manager.send(sendData);
+                }
+            }
+        }, 1000, 1000);
+    }
+
+    private static final byte RESULT_BYTE_D = 0x0A;//档速
+    private static final byte RESULT_BYTE_B = 0x0D;//摆臂速度
+    private static final byte RESULT_BYTE_DG = 0x0E;//灯光亮度
+    private static final byte RESULT_BYTE_TLY = 0x04;//陀螺仪角度
+
+    private void doBytes(byte[] bodyBytes) {
+        byte bodyByte = bodyBytes[3];
+        byte bodyByte2 = bodyBytes[5];
+        switch (bodyByte) {
+            case RESULT_BYTE_D://档速
+                switch (bodyByte2) {
+                    case 0x03://高速
+                        reSetButBg(0);
+                        tvSuDu.setText("高速");
+                        tvSuDu.setTextColor(getResources().getColor(R.color.colorAccent));
+                        break;
+                    case 0x02://中速
+                        reSetButBg(0);
+                        tvSuDu.setText("中速");
+                        tvSuDu.setTextColor(getResources().getColor(R.color.violet));
+                        break;
+                    case 0x01://低速
+                        reSetButBg(0);
+                        tvSuDu.setText("低速");
+                        tvSuDu.setTextColor(getResources().getColor(R.color.green));
+                        break;
+                }
+                break;
+            case RESULT_BYTE_B://摆臂速度
+                Integer bbsd = Integer.valueOf(String.format("%02x", new Integer(bodyByte2 & 0xff)).toUpperCase(), 16);
+                gear = bbsd;
+                tvGradeNum.setText(gear + "");
+                break;
+            case RESULT_BYTE_DG://灯光亮度
+                if (bodyByte2 == 0x00) {
+                    ivLedS.setBackgroundResource(R.mipmap.ic_led_a);
+                    tvLedS.setTextColor(getResources().getColor(R.color.red));
+                    tvLedS.setText("关闭");
+                    ledPro.setProgress(0);
+                } else {
+                    ivLedS.setBackgroundResource(R.mipmap.ic_led);
+                    tvLedS.setTextColor(getResources().getColor(R.color.yellow));
+                    tvLedS.setText("开启");
+                    Integer ff = Integer.valueOf(String.format("%02x", new Integer(bodyByte2 & 0xff)).toUpperCase(), 16);
+                    if (ff >= 100) {
+                        ledPro.setProgress(100);
+                    } else {
+                        ledPro.setProgress(ff);
+                    }
+
+                }
+                break;
+            case RESULT_BYTE_TLY://陀螺仪角度
+                switch (bodyByte2) {
+                    case 0x00://正常
+                        ivBalanced.setBackgroundResource(R.mipmap.ic_jiqi);
+                        tvBalanced.setTextColor(getResources().getColor(R.color.yellow));
+                        tvBalanced.setText("正常");
+
+                        tvSos.setVisibility(View.GONE);
+                        break;
+                    case 0x01://预警
+                        ivBalanced.setBackgroundResource(R.mipmap.ic_jiqi_b);
+                        tvBalanced.setTextColor(getResources().getColor(R.color.red_light));
+                        tvBalanced.setText("预警");
+
+                        tvSos.setVisibility(View.VISIBLE);
+
+                        break;
+                    case 0x02://报警
+                        ivBalanced.setBackgroundResource(R.mipmap.ic_jiqi_c);
+                        tvBalanced.setTextColor(getResources().getColor(R.color.red));
+                        tvBalanced.setText("报警");
+
+                        tvSos.setVisibility(View.VISIBLE);
+                        break;
+                }
+
+                break;
+        }
+
+
+    }
+
+    private void setTabShowState(final boolean b) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (b) {
+                    ivConnect.setBackgroundResource(R.mipmap.ic_lianjie_a);
+                    tvConnect.setText("连接成功");
+                    tvConnect.setTextColor(getResources().getColor(R.color.yellow));
+                } else {
+                    ivConnect.setBackgroundResource(R.mipmap.ic_lianjie);
+                    tvConnect.setText("连接断开");
+                    tvConnect.setTextColor(getResources().getColor(R.color.red));
+                }
+            }
+        });
+
+
     }
 
 
@@ -982,9 +1123,31 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             @Override
             public void onStop(VerticalSeekBar slideView, int progress) {
                 //TODO  LED 亮度调节
+                if (progress == 0) {
+                    HexResultUtils.doLEDLD(true, (byte) 0x00);
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.doLEDLD(true, (byte) 0x00));
+                        manager.send(sendData);
+                    }
+                } else if (progress <= 15) {
+                    byte[] stringtobytes = CRC16Util.Stringtobytes(progress);
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.doLEDLD(false, stringtobytes[0]));
+                        manager.send(sendData);
+                    }
+                } else {
+                    String s = Integer.toHexString(progress);
+                    byte[] bytes = CRC16Util.hexString2Bytes(s);
+                    if (socketState) {
+                        sendData = new SendData(HexResultUtils.doLEDLD(false, bytes[0]));
+                        manager.send(sendData);
+                    }
+                }
+
             }
         });
     }
+
 
     /**
      * 动态权限申请
@@ -1046,7 +1209,6 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
     public void onIbClicked(View view) {
         switch (view.getId()) {
             case R.id.ibLeft:
-
                 if (gear > 1) {
                     gear--;
                     //TODO 摆臂调档 -

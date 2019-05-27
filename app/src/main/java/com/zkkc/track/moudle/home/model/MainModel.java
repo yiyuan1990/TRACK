@@ -1,18 +1,11 @@
 package com.zkkc.track.moudle.home.model;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.Log;
 
 
 import com.blankj.utilcode.util.FileUtils;
 import com.blankj.utilcode.util.LogUtils;
-import com.blankj.utilcode.util.ToastUtils;
-import com.shuyu.gsyvideoplayer.listener.GSYVideoShotListener;
 import com.shuyu.gsyvideoplayer.listener.GSYVideoShotSaveListener;
 import com.zgl.greentest.gen.HostDaoBeanDao;
 import com.zgl.greentest.gen.PicGreenDaoBeanDao;
@@ -20,18 +13,13 @@ import com.zkkc.track.base.BaseModel;
 import com.zkkc.track.common.GreenDaoManager;
 import com.zkkc.track.entity.HostDaoBean;
 import com.zkkc.track.entity.PicGreenDaoBean;
-import com.zkkc.track.moudle.config.callback.ISwitchoverHost;
 import com.zkkc.track.moudle.home.callback.IResult;
 import com.zkkc.track.moudle.home.callback.ISwitchHost;
 import com.zkkc.track.widget.EmptyControlVideo;
 
 import org.greenrobot.greendao.query.Query;
-import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;

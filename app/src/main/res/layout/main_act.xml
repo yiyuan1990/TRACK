@@ -90,7 +90,7 @@
                 android:id="@+id/ivLedS"
                 android:layout_width="@dimen/image_width"
                 android:layout_height="@dimen/image_height"
-                android:background="@mipmap/ic_led" />
+                android:background="@mipmap/ic_led_a" />
 
             <TextView
                 android:id="@+id/tvLedS"
@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/text_padding_top"
                 android:text="@string/name_3"
-                android:textColor="@color/yellow"
+                android:textColor="@color/red"
                 android:textSize="@dimen/text_size"
                 android:textStyle="normal" />
 
@@ -455,8 +455,8 @@
 
         <ImageView
             android:id="@+id/btnHandle"
-            android:layout_width="@dimen/dp_35"
-            android:layout_height="@dimen/dp_35"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
             android:layout_above="@id/llBaiBi"
             android:layout_marginLeft="@dimen/dp_7"
             android:layout_marginBottom="@dimen/dp_20"
@@ -464,8 +464,8 @@
 
         <ImageView
             android:id="@+id/btnRePlay"
-            android:layout_width="@dimen/dp_35"
-            android:layout_height="@dimen/dp_35"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
             android:layout_marginLeft="@dimen/dp_7"
             android:layout_marginTop="@dimen/dp_25"
             android:background="@mipmap/ic_replay" />

@@ -13,6 +13,7 @@
     <color name="bg_dialog">#312E42</color>
     <color name="yellow">#FFCC33</color>
     <color name="red">#e2030e</color>
+    <color name="red_light">#b8420f</color>
     <color name="green">#07ba04</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>

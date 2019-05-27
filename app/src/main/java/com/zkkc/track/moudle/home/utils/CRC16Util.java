@@ -92,9 +92,112 @@ public class CRC16Util {
         // 将新生成的byte数组添加到原数据结尾并返回
         return concat(buf, crcByte);
     }
+
     public static <T> byte[] concat(byte[] first, byte[] second) {
         byte[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
     }
+
+
+    /*16进制byte数组转String*/
+    public static String bytes2HexString(byte[] b) {
+        String r = "";
+
+        for (int i = 0; i < b.length; i++) {
+            String hex = Integer.toHexString(b[i] & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+            r += hex.toUpperCase();
+        }
+
+        return r;
+    }
+
+    /*
+     * 16进制字符串转字节数组
+     */
+    public static byte[] hexString2Bytes(String hex) {
+
+        if ((hex == null) || (hex.equals(""))) {
+            return null;
+        } else if (hex.length() % 2 != 0) {
+            return null;
+        } else {
+            hex = hex.toUpperCase();
+            int len = hex.length() / 2;
+            byte[] b = new byte[len];
+            char[] hc = hex.toCharArray();
+            for (int i = 0; i < len; i++) {
+                int p = 2 * i;
+                b[i] = (byte) (charToByte(hc[p]) << 4 | charToByte(hc[p + 1]));
+            }
+            return b;
+        }
+
+    }
+
+    /*
+     * 字符转换为字节
+     */
+    private static byte charToByte(char c) {
+        return (byte) "0123456789ABCDEF".indexOf(c);
+    }
+
+    /*String转byte数组*/
+    public static byte[] Stringtobytes(int s) {
+        byte[] present = {};
+        switch (s) {
+            case 1:
+                present = new byte[]{0x01};
+                break;
+            case 2:
+                present = new byte[]{0x02};
+                break;
+            case 3:
+                present = new byte[]{0x03};
+                break;
+            case 4:
+                present = new byte[]{0x04};
+                break;
+            case 5:
+                present = new byte[]{0x05};
+                break;
+            case 6:
+                present = new byte[]{0x06};
+                break;
+            case 7:
+                present = new byte[]{0x07};
+                break;
+            case 8:
+                present = new byte[]{0x08};
+                break;
+            case 9:
+                present = new byte[]{0x09};
+                break;
+            case 10:
+                present = new byte[]{0x0A};
+                break;
+            case 11:
+                present = new byte[]{0x0B};
+                break;
+            case 12:
+                present = new byte[]{0x0C};
+                break;
+            case 13:
+                present = new byte[]{0x0D};
+                break;
+            case 14:
+                present = new byte[]{0x0E};
+                break;
+            case 15:
+                present = new byte[]{0x0F};
+                break;
+
+        }
+
+        return present;
+    }
+
 }

@@ -5,7 +5,10 @@ import android.app.Activity;
 import android.os.Build;
 import android.view.View;
 
+import com.blankj.utilcode.util.LogUtils;
 import com.zkkc.track.entity.HostDaoBean;
+
+import java.util.Arrays;
 
 /**
  * Created by ShiJunRan on 2019/2/22
@@ -513,4 +516,97 @@ public class HexResultUtils {
 
         return msg;
     }
+
+    /**
+     * LED亮度控制
+     */
+    public static byte[] doLEDLD(boolean bl, byte b) {
+        if (bl) {
+            byte[] msg = new byte[9];
+            msg[0] = (byte) 0x68;
+            msg[1] = (byte) 0x01;
+            msg[2] = (byte) 0x03;
+            msg[3] = (byte) 0x01;
+
+            msg[4] = (byte) 0x33;
+            msg[5] = (byte) 0x01;
+            msg[6] = (byte) 0x00;
+
+            msg[7] = (byte) 0x74;
+            msg[8] = (byte) 0x47;
+            return msg;
+        } else {
+            byte[] msg = new byte[7];
+            msg[0] = (byte) 0x68;
+            msg[1] = (byte) 0x01;
+            msg[2] = (byte) 0x03;
+            msg[3] = (byte) 0x01;
+
+            msg[4] = (byte) 0x33;
+            msg[5] = (byte) 0x01;
+            msg[6] = b;
+//            msg[7] = (byte) 0x75;
+//            msg[8] = (byte) 0xA7;
+            byte[] bytes = setParamCRC(msg);
+            LogUtils.i("SJRSJRSJR-" + bytes2HexString(bytes));
+            return bytes;
+        }
+
+//        return msg;
+    }
+
+    /*16进制byte数组转String*/
+    public static String bytes2HexString(byte[] b) {
+        String r = "";
+
+        for (int i = 0; i < b.length; i++) {
+            String hex = Integer.toHexString(b[i] & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+            r += hex.toUpperCase();
+        }
+
+        return r;
+    }
+
+    /**
+     * 为Byte数组添加两位CRC校验
+     *
+     * @param buf
+     * @return
+     */
+    public static byte[] setParamCRC(byte[] buf) {
+        int remain = CRC16Util.calcCrc16(buf);
+        byte[] crcByte = new byte[2];
+        crcByte[0] = (byte) ((remain >> 8) & 0xff);
+        crcByte[1] = (byte) (remain & 0xff);
+
+        // 将新生成的byte数组添加到原数据结尾并返回
+        return concat(buf, crcByte);
+    }
+
+    public static <T> byte[] concat(byte[] first, byte[] second) {
+        byte[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
+    }
+
+
+    /**
+     * 查询陀螺仪角度
+     */
+    public static byte[] queryTLY() {
+        byte[] msg = new byte[6];
+        msg[0] = (byte) 0x68;
+        msg[1] = (byte) 0x01;
+        msg[2] = (byte) 0x03;
+        msg[3] = (byte) 0x00;
+
+        msg[4] = (byte) 0x04;
+        msg[5] = (byte) 0x00;
+
+        return setParamCRC(msg);
+    }
+
 }
