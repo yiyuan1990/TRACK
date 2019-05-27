@@ -768,7 +768,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                     public void run() {
                         doBytes(bodyBytes);
 
-                        tvSos.setText(s + "\n" + str);
+//                        tvSos.setText(s + "\n" + str);
 //                        tvSos.setText(headBytes[0]+"-size:"+headBytes.length+"\n"+bodyBytes[0]+"-size:"+bodyBytes.length);
                     }
                 });
@@ -778,14 +778,14 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             public void onSocketWriteResponse(ConnectionInfo info, String action, ISendable data) {
                 super.onSocketWriteResponse(info, action, data);
                 final String str = ConvertUtils.bytes2HexString(data.parse());
-                LogUtils.v("onSocketWriteResponse--" + str);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        tvTest.setText(str);
-
-                    }
-                });
+//                LogUtils.v("onSocketWriteResponse--" + str);
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        tvTest.setText(str);
+//
+//                    }
+//                });
             }
         });
     }
@@ -1124,18 +1124,30 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
             public void onStop(VerticalSeekBar slideView, int progress) {
                 //TODO  LED 亮度调节
                 if (progress == 0) {
+                    ivLedS.setBackgroundResource(R.mipmap.ic_led_a);
+                    tvLedS.setTextColor(getResources().getColor(R.color.red));
+                    tvLedS.setText("关闭");
+
                     HexResultUtils.doLEDLD(true, (byte) 0x00);
                     if (socketState) {
                         sendData = new SendData(HexResultUtils.doLEDLD(true, (byte) 0x00));
                         manager.send(sendData);
                     }
                 } else if (progress <= 15) {
+                    ivLedS.setBackgroundResource(R.mipmap.ic_led);
+                    tvLedS.setTextColor(getResources().getColor(R.color.yellow));
+                    tvLedS.setText("开启");
+
                     byte[] stringtobytes = CRC16Util.Stringtobytes(progress);
                     if (socketState) {
                         sendData = new SendData(HexResultUtils.doLEDLD(false, stringtobytes[0]));
                         manager.send(sendData);
                     }
                 } else {
+                    ivLedS.setBackgroundResource(R.mipmap.ic_led);
+                    tvLedS.setTextColor(getResources().getColor(R.color.yellow));
+                    tvLedS.setText("开启");
+
                     String s = Integer.toHexString(progress);
                     byte[] bytes = CRC16Util.hexString2Bytes(s);
                     if (socketState) {
@@ -1143,6 +1155,7 @@ public class MainAct extends BaseActivity<MainContract.View, MainContract.Presen
                         manager.send(sendData);
                     }
                 }
+
 
             }
         });
